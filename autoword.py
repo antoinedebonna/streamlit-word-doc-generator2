@@ -3,7 +3,6 @@ import streamlit as st
 from docx import Document
 from docx.shared import Inches
 from PIL import Image, ExifTags
-import win32com.client
 
 # Fonction pour corriger l'orientation des images
 def correct_image_orientation(image_path):
@@ -90,24 +89,10 @@ def create_word_from_folder_structure(template_path, root_folder, output_path):
 
         process_folder(root_folder, 1, is_first_section=True)
         doc.save(output_path)
-        update_table_of_contents(output_path)
+        st.success(f"Le document a été créé avec succès : {output_path}")
 
     except Exception as e:
-        print(f"❌ Erreur lors de la création du document : {e}")
-
-def update_table_of_contents(doc_path):
-    try:
-        word = win32com.client.Dispatch("Word.Application")
-        word.Visible = False
-        doc = word.Documents.Open(doc_path)
-        doc.TablesOfContents(1).Update()
-        word.Selection.EndKey(Unit=6)
-        word.Selection.InsertBreak(3)
-        doc.Save()
-        doc.Close()
-        word.Quit()
-    except Exception as e:
-        print(f"⚠️ Erreur lors de la mise à jour du sommaire : {e}")
+        st.error(f"❌ Erreur lors de la création du document : {e}")
 
 # Streamlit interface
 st.title("Création automatique de document Word à partir d'un dossier")
@@ -124,6 +109,5 @@ if st.button("Créer le document"):
             f.write(template_path.getvalue())
 
         create_word_from_folder_structure("template.docx", root_folder, output_path)
-        st.success(f"Le document a été créé avec succès : {output_path}")
     else:
         st.error("Veuillez remplir tous les champs.")
